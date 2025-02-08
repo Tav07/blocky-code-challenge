@@ -111,7 +111,8 @@ Existen tres tipos de jugadores:
 2. Jugador aleatorio:
    - Es un jugador controlado por la computadora que elige movimientos de manera aleatoria.
    - No tiene límite en los movimientos de "romper".
-   - Si selecciona aleatoriamente "romper" el bloque de nivel superior o una celda unitaria (lo cual no está permitido), pierde su turno.
+   - Si selecciona aleatoriamente "romper" el bloque de nivel superior o una celda unitaria (lo cual no está permitido),
+   pierde su turno.
 3. Jugador inteligente:
    - Es un jugador controlado por la computadora que elige sus movimientos de manera estratégica.
    - Genera un conjunto de movimientos aleatorios y evalúa la puntuación que obtendría con cada uno.
