@@ -131,3 +131,228 @@ Un juego de Blocky puede configurarse de varias maneras:
 - **Número de movimientos:**
   -	Se puede establecer un límite de movimientos para la partida.
   -	(El juego terminará antes si un jugador cierra la ventana del juego).
+
+## 3. Configuración y código inicial
+
+En el repositorio encontrarás los siguientes archivos:
+
+- `block.py`
+- `game.py`
+- `goal.py`
+- `player.py`
+- `renderer.py` (No modifiques este archivo. Todo tu trabajo se realizará en los otros archivos).
+- `rectangle_test.py` (Te ayudará a probar get_draw_rectangles).
+- `simple_test.py` (Incluye una prueba sencilla para cada uno de los métodos que podemos probar automáticamente).
+
+Haz un fork del repositorio y clona tu fork en tu computadora.
+
+## 4. Actividades
+
+### 4.1 Tarea 1: Comprender la estructura de datos del Bloque
+
+Como era de esperarse, utilizaremos un **árbol** para representar la estructura 
+anidada de un bloque. Sin embargo, nuestros árboles tienen algunas **restricciones 
+estrictas** en su estructura y contenido:
+
+- Un nodo no puede tener exactamente tres hijos.
+  - Un bloque es de **un solo color** o está **subdividido en exactamente cuatro sub-bloques**.
+  - Si es de un solo color, se representa con un nodo **sin sub-bloques**.
+  - Si está subdividido, debe tener exactamente **cuatro sub-bloques**.
+
+Estas reglas, junto con otros detalles importantes, están documentadas en los 
+**invariantes de representación** de la clase `Block`.
+
+#### Instrucciones
+
+- Abre `block.py` y lee detenidamente los docstring de la clase.
+- Familiarízate con los atributos de un `Block`.
+- Presta especial atención a los invariantes de representación.
+- Dibuja la estructura del árbol correspondiente al siguiente tablero de juego, suponiendo 
+que la profundidad máxima es 2 (y que se ha alcanzado).
+  - Usa una letra para representar cada color.
+  - Asume que el tamaño del bloque de nivel superior es 750.
+  
+<img src="images/blocky_7.jpg" width="240" height="240" style="display: block; margin: 0 auto" />
+
+### 4.2 Tarea 2: Inicializar Bloques y Dibujarlos
+
+Ahora que tienes una buena comprensión de la estructura de datos, estás listo para comenzar 
+a implementar la clase `Block`.
+
+#### Paso 1: Implementar `__init__`
+
+Debes escribir el método de inicialización `__init__` de la clase `Block`.
+
+Este método debe:
+- Inicializar los atributos de un bloque de acuerdo con los invariantes de representación.
+- Manejar correctamente los bloques de color sólido y los bloques subdivididos en cuatro sub-bloques.
+
+#### Paso 2: Implementar `random_init`
+
+Dado que crear manualmente bloques interesantes sería muy tedioso, necesitamos una forma de generar 
+tableros de juego de manera aleatoria. Para eso, implementaremos la función `random_init`, que se 
+encuentra fuera de la clase `Block`, ya que no necesita referirse a `self`.
+
+Estrategia para `random_init`:
+
+1. Si un bloque no ha alcanzado la profundidad máxima, puede subdividirse. 
+2. Para decidir si se subdivide, haz lo siguiente:
+   - Usa `random.random()` para generar un número aleatorio en el intervalo `[0, 1)`.
+   - Si el número generado es menor que `math.exp(-0.25 * level)`, entonces el bloque se subdivide en cuatro sub-bloques.
+3. Si el bloque no se subdivide, elige un color aleatorio de la lista `renderer.COLOUR_LIST`.
+
+💡 Nota:
+- La profundidad máxima no siempre se alcanzará en la generación aleatoria, ya que depende 
+de los valores aleatorios obtenidos.
+- `random_init` debe asignar todos los atributos de los bloques generados, excepto `position` 
+y `size`, que serán establecidos en el siguiente paso.
+- `random_init` puede hacer su trabajo casi por completo mediante llamadas al inicializador `__init__` de `Block`.
+
+#### Paso 3: Definir el método `update_block_locations`
+
+Este método actualiza los valores de los atributos `position` y `size` en todos los bloques de un `Block`, 
+asegurando que sean consistentes con los invariantes de representación de la clase.
+
+Ten en cuenta que la posición y el tamaño de un `Block` se determinan por la posición y el tamaño de su bloque padre.
+
+#### Paso 4: Hacer que un bloque sea dibujable con `rectangles_to_draw`
+
+Para que un `Block` pueda ser dibujado, debemos proporcionar una lista de rectángulos al **renderer**.
+
+Escribe el método `rectangles_to_draw`.
+
+Aún no podemos modificar un `Block`, pero tendremos lo suficiente para recorrer los pasos de un juego 
+una vez que definamos al menos un tipo de `Player` y `Goal`, y preparemos la clase `Game`.
+
+**Verifica tu trabajo:**
+
+Proporcionaremos una función llamada `print_block`, que imprimirá el contenido de un `Block` en formato de 
+texto. Usa esta función para confirmar que tus implementaciones de `__init__` y `random_init` funcionan correctamente.
+
+También proporcionaremos código de **pytest** para probar tu método `get_draw_rectangles`.
+Podrás probar `get_selected_block` una vez que el juego esté en funcionamiento.
+
+### 4.3 Tarea 3: Completar las clases básicas de objetivos
+
+Necesitamos establecer algunos objetivos básicos y calcular la puntuación de un jugador en
+relación con su objetivo.
+
+1. Abre `goal.py` y familiarízate con la interfaz de la clase abstracta `Goal`.
+   - Esta clase contiene la infraestructura básica para almacenar la información de cualquier objetivo.
+   - Define los métodos abstractos `score` y `description`, que deben ser implementados por cualquier subclase.
+2. Define las clases de objetivos específicos:
+   - `BlobGoal` (ya está iniciada en el código).
+   - `PerimeterGoal`.
+
+Por ahora, **todos los objetivos deben devolver el mismo valor para `score`**, 
+sin importar el estado del tablero. ¿Qué tal 148?
+
+📌 **Nota:** Ignora el método `_undiscovered_blob_size` por ahora; lo implementarás cuando 
+desarrolles el sistema de puntuación real.
+
+### 4.4 Tarea 4: Completar la clase `Game`
+
+¡Ahora tenemos suficientes elementos para armar un juego rudimentario!
+
+1. Abre `game.py` y revisa la docstring de la clase `Game`. Asegúrate de comprender todos sus atributos.
+2. Esta clase solo tiene dos métodos, y ya hemos implementado el método `run_game` por ti. 
+Implementa el inicializador. Debe hacer lo siguiente:
+   - Crear un Renderer para este juego.
+   - Generar un tipo de objetivo aleatorio que compartirán todos los jugadores.
+   - Generar un tablero aleatorio con la profundidad máxima dada.
+   - Generar el número correcto de jugadores humanos, jugadores aleatorios y jugadores 
+   inteligentes (con los niveles de dificultad dados), en ese orden.
+   - Asignar a los jugadores números consecutivos, comenzando en 0.
+   - Asignar a cada jugador un color objetivo aleatorio y mostrar su objetivo.
+   - Antes de retornar, dibujar el tablero. 
+3. Hemos escrito una clase abstracta `Player` y una subclase `HumanPlayer` para ti. Para que el usuario 
+pueda jugar, debe poder seleccionar un bloque para una acción (como rotarlo) pasando el cursor sobre 
+el tablero y usando las flechas arriba y abajo para elegir un nivel. En `block.py`, 
+el método `get_selected_block` toma estas entradas del usuario y encuentra el `Block` correspondiente 
+dentro del árbol. Implementa ese método.
+
+**Verifica tu trabajo:**
+
+Deberías poder ejecutar un juego con solo jugadores humanos. Prueba ejecutando el método `two_player_game`; 
+puedes descomentar la llamada a este en el bloque principal del módulo `game`. Para seleccionar un bloque 
+para una acción, coloca el cursor dentro de él y usa las flechas arriba y abajo para elegir el nivel deseado.
+
+El área en la parte inferior del tablero del juego te indicará cómo seleccionar una acción.
+
+Hasta ahora, no se están realizando movimientos reales y la puntuación no cambia, pero deberías poder 
+ver el tablero, notar cómo los turnos alternan entre los jugadores (indicado por la etiqueta roja 
+"PLAYER n" debajo del tablero) y ver que el juego termina cuando se alcanza el número de movimientos deseado.
+
+### 4.5 Tarea 5: Hacer que los `Block` sean mutables
+
+Hagamos que el juego sea real permitiendo que los jugadores realicen movimientos en el tablero.
+
+1. Revisa los invariantes de representación de la clase Block. Son fundamentales para el correcto 
+funcionamiento del programa, y todos los métodos de la clase deben asegurarse de que se mantengan.
+2. Define los métodos swap, rotate y smash. Asegúrate de que cada uno de ellos llame a `update_block_locations` 
+antes de retornar.
+3. Verifica que cada uno de los métodos que modifican el estado de los `Block` mantiene los invariantes 
+de representación de la clase `Block`.
+
+**Verifica tu trabajo:**
+
+Ahora, cuando juegues, deberías ver que el tablero cambia con los movimientos. Puede ser más fácil 
+usar la función `solitaire_game` para probar los diferentes movimientos.
+
+### 4.6 Tarea 6: Implementar la puntuación para los objetivos de perímetro
+
+Ahora hagamos que el sistema de puntuación funcione.
+
+La unidad que usamos para calcular la puntuación en relación con un objetivo es una **celda unitaria**. 
+El tamaño de una celda unitaria depende de la **profundidad máxima** en el `Block`.
+
+Por ejemplo, con una profundidad máxima de 4, podríamos obtener este tablero:
+
+<img src="images/blocky_8.jpg" width="240" height="240" style="display: block; margin: 0 auto" />
+
+Si cuentas hacia abajo a través de los niveles, verás que los bloques más pequeños están en el nivel 4. 
+Esos bloques son celdas unitarias.
+
+Sería posible generar ese mismo tablero incluso si la profundidad máxima fuera 5. En ese caso, 
+las celdas unitarias serían de un tamaño más pequeño, aunque ningún `Block` se haya dividido hasta ese nivel.
+
+Ten en cuenta que el **perímetro** puede incluir celdas unitarias del color objetivo, así como bloques 
+más grandes de ese mismo color. Para un bloque más grande, solo cuentan **las porciones del tamaño de una 
+celda unitaria** que estén en el perímetro.
+
+Por ejemplo, supongamos que la profundidad máxima es 3, el color objetivo es rojo y el tablero está en este estado:
+
+<img src="images/blocky_9.jpg" width="240" height="240" style="display: block; margin: 0 auto" />
+
+Solo los bloques rojos en el borde contribuirían a la puntuación, que sería 4:
+- Uno por cada una de las dos celdas unitarias en el borde derecho.
+- Dos por las celdas unitarias dentro del bloque rojo más grande que están realmente en el borde.
+
+(Nota que el bloque rojo más grande **no está dividido en cuatro celdas unitarias**, pero aun así 
+puntuamos como si lo estuviera).
+
+Recuerda que las **celdas en las esquinas cuentan el doble en la puntuación**.
+Entonces, si el jugador rotara el bloque inferior derecho para colocar el bloque rojo grande en la esquina:
+
+<img src="images/blocky_10.jpg" width="240" height="240" style="display: block; margin: 0 auto" />
+
+La puntuación aumentaría a 6.
+
+Ahora que entendemos estos detalles sobre la puntuación para un objetivo de perímetro, podemos implementarlo.
+
+Calcular la puntuación para un objetivo de perímetro o un objetivo de bloque recorriendo la estructura del árbol 
+es muy difícil. (¡Piénsalo bien!). Es mucho **más fácil evaluar los objetivos recorriendo una representación 
+bidimensional** del tablero de juego.
+
+Tu próxima tarea es proporcionar esa posibilidad:
+- En el módulo block, define el método flatten.
+- Vuelve a implementar el método score en la clase PerimeterGoal para calcular la puntuación correctamente. 
+Comienza aplanando el tablero (flatten) para facilitar el cálculo.
+
+**Verifica tu trabajo:**
+
+Ahora, cuando juegues, si un jugador tiene un objetivo de perímetro, deberías ver cómo cambia la puntuación.
+
+Confirma que la puntuación se actualiza correctamente.
+
+
