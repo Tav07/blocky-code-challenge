@@ -1,5 +1,8 @@
 # Blocky
 
+Esta actividad fue tomada, traducida y adaptada de 
+[Blocky](http://nifty.stanford.edu/2019/horton-liu-blocky-recursive-tree-game/)
+
 ## 1. Objetivos de aprendizaje
 Al finalizar esta tarea, deberías ser capaz de:
 
