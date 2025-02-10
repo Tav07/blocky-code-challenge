@@ -355,4 +355,118 @@ Ahora, cuando juegues, si un jugador tiene un objetivo de perímetro, deberías 
 
 Confirma que la puntuación se actualiza correctamente.
 
+### 4.7 Tarea 7: Implementar la puntuación para los objetivos de bloque (Blob Goals)
+
+Calcular la puntuación con un objetivo de bloque implica aplanar el árbol, recorrer las celdas 
+en el tablero aplanado y determinar, para cada celda, el tamaño del bloque al que pertenece 
+(si es que forma parte de un bloque del color objetivo). La puntuación es el tamaño del bloque 
+más grande encontrado.
+
+Pero, ¿cómo determinamos el tamaño del bloque al que pertenece una celda? (Parece que necesitaremos
+un método auxiliar, ¿verdad?) Comenzaremos desde la celda dada y:
+
+- Si no es del color objetivo, entonces no forma parte de un bloque de ese color, por lo que
+debe reportar un tamaño de 0.
+- Si es del color objetivo, entonces forma parte de un bloque de ese color. Puede ser un bloque 
+muy pequeño que solo contenga esa celda o uno más grande. Debe preguntar a sus vecinos por el 
+tamaño del bloque al que pertenecen y usar esa información para determinar su propio tamaño. 
+(Parece recursivo, ¿verdad?)
+
+Un problema potencial es que cuando preguntamos a un vecino por el tamaño de su bloque, este 
+puede incluirnos en su cálculo, lo que haría que la celda se cuente dos veces (o más). Para 
+evitar estos problemas, llevaremos un registro de las celdas que han sido **"visitadas"** 
+por el algoritmo. Para ello, crearemos otra estructura de lista anidada que sea exactamente 
+paralela al árbol aplanado. En cada celda almacenaremos:
+
+- -1 si la celda aún no ha sido visitada.
+- 0 si ha sido visitada, pero no es del color objetivo.
+- 1 si ha sido visitada y es del color objetivo.
+
+Tu tarea es implementar este algoritmo.
+
+1. Abre `goal.py` y lee el docstring del método auxiliar `_undiscovered_blob_size`.
+2. Dibuja una cuadrícula de **4x4** con un pequeño bloque en ella y una cuadrícula 
+paralela de 4x4 llena de valores -1.
+3. Elige una celda dentro de tu bloque y supón que llamamos a **_undiscovered_blob_size**. 
+Sigue el rastro de lo que debería hacer el método. Recuerda no desenrollar la recursión. 
+Simplemente asume que cuando preguntes a un vecino por su respuesta, este lo hará correctamente 
+(y actualizará la estructura de celdas visitadas correctamente).
+4. Implementa `_undiscovered_blob_size`.
+5. Ahora reemplaza la implementación temporal de `BlobGoal.score` por una versión real. 
+Usa `_undiscovered_blob_size` como método auxiliar.
+
+Aunque solo tenemos dos tipos de objetivos, puedes notar que agregar un nuevo tipo de objetivo, 
+como conectar un color en diagonal, solo requeriría definir una nueva subclase de `Goal`, 
+implementar el método score para ese objetivo y actualizar el código que configura el juego para 
+incluir el nuevo objetivo como una posibilidad.
+
+**Verifica tu trabajo:**
+
+Ahora, cuando juegues, la puntuación de un jugador debería actualizarse después de cada movimiento,
+independientemente del tipo de objetivo que tenga.
+
+### 4.8 Tarea 8: Agregar jugadores aleatorios e inteligentes
+
+1. Dentro de `player.py`, implementa la clase `RandomPlayer`. El método `make_move` debe hacer 
+lo siguiente:
+   - Elegir un bloque aleatorio.
+   - Resaltar el bloque elegido y dibujar el tablero.
+   - Llamar a `pygame.time.wait(TIME_DELAY)` para introducir una pausa y que el usuario vea lo que está ocurriendo.
+   - Elegir aleatoriamente uno de los 5 tipos de acción posibles y aplicarlo al bloque seleccionado.
+   - Quitar el resaltado del bloque elegido y volver a dibujar el tablero.
+
+2. Implementa la clase `SmartPlayer`.
+
+    Un `SmartPlayer` tiene un nivel de dificultad, que indica qué tan difícil es jugar contra él.
+
+   - El nivel de dificultad es un número entero >= 0, que determina cuántos movimientos posibles 
+   compara antes de elegir uno.
+   - Si la dificultad es 0, compara 5 posibles movimientos.
+   - Consulta la siguiente tabla para conocer los valores correspondientes a otros niveles de dificultad:
+   
+   | Dificultad | Movimientos a comparar |
+   |:----------:|:----------------------:|
+   |     0      |           5            |
+   |     1      |           10           |
+   |     2      |           25           |
+   |     3      |           50           |
+   |     4      |          100           |
+   |     5      |          150           |
+   |     >5     |          150           |
+
+   - Al generar estos movimientos aleatorios para comparar, recuerda que un SmartPlayer no puede hacer smash.
+        
+   Para evaluar cada uno de los posibles movimientos y elegir el mejor, el SmartPlayer debe:
+     
+   - Aplicar el movimiento, calcular la puntuación y luego deshacer el movimiento.
+   - Ninguno de estos cambios debe mostrarse en la pantalla, ya que el renderer no actualizará el tablero 
+   mientras esto ocurre.
+        
+   El método `make_move` debe hacer lo siguiente:
+     
+   - Evaluar la cantidad correcta de movimientos posibles y elegir el mejor entre ellos.
+   - Resaltar el bloque involucrado en el movimiento elegido y dibujar el tablero.
+   - Llamar a `pygame.time.wait(TIME_DELAY)` para introducir una pausa y que el usuario vea lo que está ocurriendo.
+   - Aplicar el movimiento elegido.
+   - Quitar el resaltado del bloque involucrado en el movimiento y volver a dibujar el tablero.
+
+**Verifica tu trabajo:**
+
+Ahora puedes ejecutar juegos con todos los tipos de jugadores.
+ 
+## Pulir el código
+
+Tómate un tiempo para perfeccionar tu código. Este paso mejorará tu calificación, pero también 
+se siente muy bien. Aquí hay algunas cosas que puedes hacer:
+
+- Presta atención a cualquier violación de las directrices de estilo PEP8 que PyCharm señale. ¡Corrígelas!
+- Lee y mejora tus comentarios internos para que sean más claros y útiles.
+- Elimina cualquier código que hayas agregado solo para depuración, como sentencias print.
+- Elimina cualquier sentencia pass en los lugares donde ya hayas agregado el código necesario.
+- Elimina la palabra "TODO" en cualquier parte donde ya hayas completado la tarea.
+- ¡Siéntete orgulloso de tu código impecable! 🎉
+
+
+
+
 
